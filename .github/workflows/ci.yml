@@ -73,3 +73,30 @@ jobs:
         with:
           name: frontend-dist
           path: frontend-dist.zip
+
+  notify:
+    if: ${{ always() }}
+    needs: [test-backend, lint-frontend, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enviar notificacao por e-mail
+        env:
+          # Secrets obrigatorios:
+          # SMTP_HOST, SMTP_PORT, SMTP_USE_TLS, SMTP_USERNAME, SMTP_PASSWORD
+          # NOTIFICATION_EMAIL_TO, NOTIFICATION_EMAIL_FROM
+          # NOTIFICATION_EMAIL_TO pode conter varios e-mails separados por virgula.
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
+          NOTIFICATION_EMAIL_TO: ${{ secrets.NOTIFICATION_EMAIL_TO }}
+          NOTIFICATION_EMAIL_FROM: ${{ secrets.NOTIFICATION_EMAIL_FROM }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          TEST_BACKEND_RESULT: ${{ needs.test-backend.result }}
+          LINT_FRONTEND_RESULT: ${{ needs.lint-frontend.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: python .github/scripts/send_notification.py
