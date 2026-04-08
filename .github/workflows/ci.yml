@@ -1,4 +1,4 @@
-# Integração contínua — backend (testes), frontend (lint) e build.
+# Integração contínua — backend (testes), frontend (lint), build e deploy.
 name: CI
 
 on:
@@ -74,9 +74,19 @@ jobs:
           name: frontend-dist
           path: frontend-dist.zip
 
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Backend Deploy
+        run: curl -X POST ${{ secrets.RAILWAY_WEBHOOK_BACK }}
+      - name: Trigger Frontend Deploy
+        run: curl -X POST ${{ secrets.RAILWAY_WEBHOOK_FRONT }}
+
   notify:
     if: ${{ always() }}
-    needs: [test-backend, lint-frontend, build]
+    needs: [test-backend, lint-frontend, build, deploy]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -85,10 +95,6 @@ jobs:
           python-version: '3.12'
       - name: Enviar notificacao por e-mail
         env:
-          # Secrets obrigatorios:
-          # SMTP_HOST, SMTP_PORT, SMTP_USE_TLS, SMTP_USERNAME, SMTP_PASSWORD
-          # NOTIFICATION_EMAIL_TO, NOTIFICATION_EMAIL_FROM
-          # NOTIFICATION_EMAIL_TO pode conter varios e-mails separados por virgula.
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
@@ -99,4 +105,5 @@ jobs:
           TEST_BACKEND_RESULT: ${{ needs.test-backend.result }}
           LINT_FRONTEND_RESULT: ${{ needs.lint-frontend.result }}
           BUILD_RESULT: ${{ needs.build.result }}
+          DEPLOY_RESULT: ${{ needs.deploy.result }} 
         run: python .github/scripts/send_notification.py
