@@ -6,10 +6,7 @@ type Props = {
   inicial: string
 }
 
-/**
- * Tenta carregar a foto de `public/images/`. Se o arquivo não existir ainda,
- * mostra um placeholder bonito até você adicionar as imagens reais.
- */
+/** Foto do produto ou placeholder com a inicial. */
 export function ProductImage({ src, alt, inicial }: Props) {
   const [erro, setErro] = useState(false)
 

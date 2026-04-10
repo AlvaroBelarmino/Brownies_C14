@@ -122,8 +122,7 @@ function App() {
             <em className="hero-em">do forno</em> para o seu pedido.
           </h1>
           <p className="hero-lead">
-            Monte seu pedido, use cupom quando houver e veja frete e impostos na hora. Fotos dos
-            produtos: pasta <code className="inline-code">public/images/</code>.
+            Monte seu pedido, use cupom quando houver e veja frete e impostos calculados na hora.
           </p>
           <div className="hero-badges">
             <span className="pill">Frete grátis a partir de R$ 80</span>
@@ -138,7 +137,7 @@ function App() {
           <div className="section-head">
             <h2>Cardápio</h2>
             <p className="section-desc">
-              Ajuste as quantidades. Os preços seguem o domínio acordado no projeto (REGRAS.md).
+              Escolha as quantidades — os valores por unidade são os do nosso cardápio.
             </p>
           </div>
 
@@ -235,7 +234,7 @@ function App() {
               disabled={loading}
               onClick={() => void calcular()}
             >
-              {loading ? 'Calculando…' : 'Calcular orçamento'}
+              {loading ? 'Calculando…' : 'Ver resumo do pedido'}
             </button>
 
             {error ? <p className="alert alert--error">{error}</p> : null}
@@ -283,18 +282,12 @@ function App() {
                 </dl>
               </div>
             ) : null}
-
-            <p className="dev-hint">
-              API: <span className="dev-hint__url">{apiBase()}</span>
-            </p>
           </div>
         </aside>
       </main>
 
       <footer className="footer">
-        <p>
-          Doceria — orçamento online. Imagens em <code>public/images/</code>.
-        </p>
+        <p>Brownie da Turma · doceria artesanal.</p>
       </footer>
     </div>
   )

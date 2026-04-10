@@ -1,4 +1,4 @@
-/** Espelha REGRAS.md — preços oficiais do cardápio. */
+/** Cardápio — preços alinhados à API (backend). */
 
 export type ItemCardapio = {
   sku: string
@@ -6,7 +6,7 @@ export type ItemCardapio = {
   /** Texto curto para SEO / card */
   descricao: string
   precoUnitario: number
-  /** Arquivo em `public/images/` (ex.: `b001.png`). */
+  /** Nome do ficheiro de imagem em `/images/`. */
   imagem: string
 }
 
