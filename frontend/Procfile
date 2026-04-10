@@ -1,2 +1,2 @@
-# Railway: servir o build estático na porta $PORT (após npm run build)
-web: npx --yes serve@14.2.4 -s dist -l tcp://0.0.0.0:$PORT
+# Railway: servir o build estático (serve em dependencies; evita npx ausente no PATH)
+web: npm run start
