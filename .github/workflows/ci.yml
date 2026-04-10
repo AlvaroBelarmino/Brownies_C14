@@ -79,10 +79,28 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Backend Deploy
-        run: curl -X POST ${{ secrets.RAILWAY_WEBHOOK_BACK }}
-      - name: Trigger Frontend Deploy
-        run: curl -X POST ${{ secrets.RAILWAY_WEBHOOK_FRONT }}
+      - name: Disparar deploy do backend (Railway)
+        env:
+          HOOK: ${{ secrets.RAILWAY_WEBHOOK_BACK }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOOK:-}" ]; then
+            echo "::error::Defina o secret RAILWAY_WEBHOOK_BACK no repositório (Settings → Secrets → Actions)."
+            exit 1
+          fi
+          echo "Chamando webhook do backend..."
+          curl -fsS -m 120 -X POST "$HOOK"
+      - name: Disparar deploy do frontend (Railway)
+        env:
+          HOOK: ${{ secrets.RAILWAY_WEBHOOK_FRONT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOOK:-}" ]; then
+            echo "::error::Defina o secret RAILWAY_WEBHOOK_FRONT no repositório."
+            exit 1
+          fi
+          echo "Chamando webhook do frontend..."
+          curl -fsS -m 120 -X POST "$HOOK"
 
   notify:
     if: ${{ always() }}

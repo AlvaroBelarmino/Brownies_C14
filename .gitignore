@@ -7,9 +7,15 @@ __pycache__/
 .venv/
 venv/
 env/
+# Variáveis de ambiente — não commitar credenciais, tokens, webhooks ou SMTP (enunciço C14).
 .env
 .env.*
 !.env.example
+!**/.env.example
+.env.local
+.env.production
+.env.production.local
+.env.development.local
 *.egg-info/
 .eggs/
 dist/

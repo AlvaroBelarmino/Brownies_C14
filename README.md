@@ -4,11 +4,17 @@ Aplicação web para montagem de pedidos e cálculo de orçamento de uma doceria
 
 ### Aplicação em produção (Railway)
 
-A interface está publicada em:
+Front e back estão em **serviços separados** no Railway:
 
-**[https://browniesc14.up.railway.app](https://browniesc14.up.railway.app)**
+| Serviço | URL |
+|---------|-----|
+| **Frontend** (interface) | [https://browniesc14.up.railway.app](https://browniesc14.up.railway.app) |
+| **Backend** (FastAPI / API) | [https://browniesc14-production.up.railway.app](https://browniesc14-production.up.railway.app) |
 
-Assim dá para testar o fluxo (cardápio, cupom e orçamento) **sem rodar o projeto na máquina local**. A API em produção já deve estar configurada no build do front (`VITE_API_BASE`) e o CORS no backend para essa origem.
+- Documentação da API em produção (Swagger): `https://browniesc14-production.up.railway.app/docs`
+- Healthcheck: `GET https://browniesc14-production.up.railway.app/health`
+
+No **Railway** (serviço do front), configure a variável de build **`VITE_API_BASE`** com a URL pública da API (HTTPS, sem barra no final) — **não** commite isso em `.env` versionado; use só o painel ou secrets. No backend, `CORS_ORIGINS` deve incluir a origem HTTPS do front (ou use o padrão já aceito no código para o domínio do projeto).
 
 ## Tecnologias
 
@@ -72,6 +78,13 @@ Com a API no ar:
 - Documentação interativa (Swagger): `http://127.0.0.1:8000/docs`
 - Redoc: `http://127.0.0.1:8000/redoc`
 - Healthcheck: `GET http://127.0.0.1:8000/health`
+
+### API em produção (Railway)
+
+A mesma API sobe no Railway com URL pública (porta mapeada pela plataforma; não é necessário informar `:8080` no navegador):
+
+- Base: **https://browniesc14-production.up.railway.app**
+- Swagger: **https://browniesc14-production.up.railway.app/docs**
 
 ### Endpoint principal
 
@@ -143,7 +156,7 @@ Abrir no navegador: `http://127.0.0.1:5173`
 
 | Variável | Descrição |
 |----------|-----------|
-| `VITE_API_BASE` | URL base da API (sem barra no final). Ex.: `http://127.0.0.1:8000`. Em produção, apontar para a URL pública do backend. |
+| `VITE_API_BASE` | URL base da API (sem barra no final). Em dev, use `http://127.0.0.1:8000` no `.env` local (não versionado). Em produção, defina **só** no Railway (Variables) ou em secret de CI — **não** coloque URLs/credenciais sensíveis no repositório. |
 
 Copie `frontend/.env.example` para `frontend/.env` e ajuste os valores.
 
@@ -177,6 +190,14 @@ O workflow em [`.github/workflows/ci.yml`](.github/workflows/ci.yml) executa, em
 
 Secrets necessários no repositório (GitHub → Settings → Secrets and variables → Actions) devem ser configurados pela equipe (webhooks Railway, SMTP, e-mails, etc.).
 
+### Dados sensíveis (enunciço da disciplina)
+
+- **Não** versionar no código: senhas, tokens, **endereço de e-mail fixo** para notificação, webhooks completos ou credenciais SMTP.
+- **Notificação por e-mail:** destinatário, remetente e SMTP vêm **somente** de **Secrets** do GitHub e `env` no workflow (ver [`.github/scripts/send_notification.py`](.github/scripts/send_notification.py)).
+- **Deploy (Railway):** URLs dos *Deploy Hooks* ficam **apenas** nos Secrets `RAILWAY_WEBHOOK_BACK` e `RAILWAY_WEBHOOK_FRONT`.
+- **`VITE_API_BASE` em produção:** definir nas **Variables** do Railway (serviço do front), não em arquivo `.env` commitado.
+- O [`.gitignore`](.gitignore) inclui `.env`, `.env.production` e similares para reduzir risco de commit acidental.
+
 ### Produção: Railway
 
 O deploy em **produção** é feito na [Railway](https://railway.app): serviços separados para **API** (Python/Uvicorn) e **interface** (build estático do Vite ou serviço Node, conforme a configuração do grupo).
@@ -185,12 +206,10 @@ O deploy em **produção** é feito na [Railway](https://railway.app): serviços
 |------|------------|
 | **Disparo automático** | Push na `main`/`master` executa o workflow; o job `deploy` chama os **Deploy Hooks** configurados nos secrets `RAILWAY_WEBHOOK_BACK` e `RAILWAY_WEBHOOK_FRONT`. |
 | **URL da API** | Defina no painel do Railway (variáveis do serviço backend). Use essa URL como **`VITE_API_BASE`** no **build** do frontend em produção, para o navegador chamar o backend correto. |
-| **CORS** | No backend, `CORS_ORIGINS` deve incluir a **origem HTTPS** do front no Railway (ex.: `https://seu-front.up.railway.app`), além das URLs de desenvolvimento se ainda forem usadas. |
+| **CORS** | O backend inclui a origem do front em produção nos padrões; pode sobrescrever com `CORS_ORIGINS` no Railway (variável de ambiente, não no código). |
+| **Build do front** | Defina `VITE_API_BASE` nas **Variables** do serviço frontend no Railway (marcar para **Build** se a plataforma separar). **Não** commite `.env.production` com URLs ou segredos. |
 
-**URLs públicas (preencher com as do projeto):**
-
-- API: `https://` *(colocar aqui a URL do serviço backend no Railway)*  
-- Front: `https://` *(colocar aqui a URL do serviço frontend no Railway)*  
+**Se o deploy no Railway ou no GitHub falhar:** confira os **logs** do serviço no Railway; **Root Directory** do serviço de API deve ser `backend` e do front `frontend`; variáveis `RAILWAY_WEBHOOK_BACK` e `RAILWAY_WEBHOOK_FRONT` nos **Secrets** do GitHub devem ser os **Deploy Hooks** corretos (copiar do painel de cada serviço no Railway).
 
 ---
 

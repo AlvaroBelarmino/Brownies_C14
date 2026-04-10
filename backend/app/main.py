@@ -9,11 +9,15 @@ from app.domain.pedido import calcular_pedido
 from app.schemas import PedidoIn
 
 
+# Origens padrão: dev local + front em produção no Railway (sobrescreva com CORS_ORIGINS se precisar).
+_DEFAULT_CORS = (
+    "http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:4173,http://localhost:4173,"
+    "https://browniesc14.up.railway.app"
+)
+
+
 def _cors_origins() -> list[str]:
-    raw = os.getenv(
-        "CORS_ORIGINS",
-        "http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:4173,http://localhost:4173",
-    )
+    raw = os.getenv("CORS_ORIGINS", _DEFAULT_CORS)
     return [o.strip() for o in raw.split(",") if o.strip()]
 
 
